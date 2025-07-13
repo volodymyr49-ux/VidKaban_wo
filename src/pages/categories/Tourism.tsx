@@ -1,0 +1,141 @@
+import React from 'react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Timer, Users, Ticket } from 'lucide-react';
+
+const tourismItems = [
+  {
+    id: 1,
+    title: 'Тур до Мальдів',
+    description: '7 днів на розкішному курорті з повним пансіоном',
+    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
+    ticketPrice: 400,
+    progress: 73,
+    timeLeft: '3д 12г',
+    participants: 345
+  },
+  {
+    id: 2,
+    title: 'Подорож до Парижа',
+    description: '5 днів у місті кохання з екскурсіями',
+    image: 'https://images.unsplash.com/photo-1431274172761-fca41d930114?w=400&h=300&fit=crop',
+    ticketPrice: 250,
+    progress: 85,
+    timeLeft: '1д 18г',
+    participants: 567
+  },
+  {
+    id: 3,
+    title: 'Альпійський skiing',
+    description: 'Тиждень катання на лижах в Австрійських Альпах',
+    image: 'https://images.unsplash.com/photo-1551524164-6cf5ac691f4d?w=400&h=300&fit=crop',
+    ticketPrice: 350,
+    progress: 58,
+    timeLeft: '4д 8г',
+    participants: 234
+  },
+  {
+    id: 4,
+    title: 'Сафарі в Африці',
+    description: '10 днів сафарі в Кенії з професійним гідом',
+    image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400&h=300&fit=crop',
+    ticketPrice: 500,
+    progress: 91,
+    timeLeft: '12г 30хв',
+    participants: 189
+  },
+  {
+    id: 5,
+    title: 'Круїз Середземним морем',
+    description: '14 днів на розкішному лайнері',
+    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop',
+    ticketPrice: 600,
+    progress: 45,
+    timeLeft: '6д 15г',
+    participants: 123
+  },
+  {
+    id: 6,
+    title: 'Японська культура',
+    description: '8 днів в Японії з відвідуванням Токіо та Кіото',
+    image: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=400&h=300&fit=crop',
+    ticketPrice: 450,
+    progress: 67,
+    timeLeft: '2д 22г',
+    participants: 298
+  }
+];
+
+const Tourism = () => {
+  return (
+    <div className="min-h-screen">
+      <Header />
+      <div className="py-16 bg-gradient-to-br from-teal-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+              Туризм
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Подорожі мрії та незабутні пригоди по всьому світу
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {tourismItems.map((item) => (
+              <Card key={item.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                <CardHeader className="p-0">
+                  <div className="relative overflow-hidden">
+                    <img 
+                      src={item.image} 
+                      alt={item.title}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
+                      <Timer className="w-4 h-4 text-orange-500" />
+                      <span className="text-sm font-medium">{item.timeLeft}</span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">{item.title}</h3>
+                  <p className="text-gray-600 mb-4">{item.description}</p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Прогрес продажів</span>
+                      <span className="text-sm font-medium">{item.progress}%</span>
+                    </div>
+                    <Progress value={item.progress} className="h-2" />
+                    
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        <span>{item.participants} учасників</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Ticket className="w-4 h-4" />
+                        <span>{item.ticketPrice} ₴</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-6 pt-0">
+                  <Button className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold py-3 rounded-xl transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
+                    Купити квиток за {item.ticketPrice} ₴
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+};
+
+export default Tourism;
