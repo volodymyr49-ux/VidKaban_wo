@@ -24,9 +24,9 @@ const CategoriesCarousel = () => {
     <section className="py-16 bg-gradient-to-br from-gray-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Категорії призів</h2>
+          <h2 className="text-4xl font-bold text-teal-800 mb-4">Категорії призів</h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Оберіть категорію, яка вас цікавить, та візьміть участь у розіграшах
+            Оберіть категорію, яка вас цікавить, та візьміть участь у розіграшах дивовижних призів
           </p>
         </div>
 
