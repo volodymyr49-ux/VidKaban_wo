@@ -2,8 +2,11 @@
 import React from 'react';
 import { Wallet, User, Home, Ticket, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+  const navigate = useNavigate();
+
   return (
     <header className="bg-gradient-to-r from-teal-800 via-teal-700 to-teal-600 shadow-2xl sticky top-0 z-50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
@@ -20,20 +23,32 @@ const Header = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#" className="text-white hover:text-yellow-400 transition-all duration-300 font-medium flex items-center space-x-2 hover:scale-105">
+            <button 
+              onClick={() => navigate('/')}
+              className="text-white hover:text-yellow-400 transition-all duration-300 font-medium flex items-center space-x-2 hover:scale-105"
+            >
               <Home className="w-4 h-4" />
               <span>Головна</span>
-            </a>
-            <a href="#" className="text-white hover:text-yellow-400 transition-all duration-300 font-medium hover:scale-105">
+            </button>
+            <button 
+              onClick={() => navigate('/categories')}
+              className="text-white hover:text-yellow-400 transition-all duration-300 font-medium hover:scale-105"
+            >
               Категорії
-            </a>
-            <a href="#" className="text-white hover:text-yellow-400 transition-all duration-300 font-medium hover:scale-105">
+            </button>
+            <button 
+              onClick={() => navigate('/winners')}
+              className="text-white hover:text-yellow-400 transition-all duration-300 font-medium hover:scale-105"
+            >
               Наші переможці
-            </a>
-            <a href="#" className="text-white hover:text-yellow-400 transition-all duration-300 font-medium flex items-center space-x-2 hover:scale-105">
+            </button>
+            <button 
+              onClick={() => navigate('/my-tickets')}
+              className="text-white hover:text-yellow-400 transition-all duration-300 font-medium flex items-center space-x-2 hover:scale-105"
+            >
               <Ticket className="w-4 h-4" />
               <span>Мої квитки</span>
-            </a>
+            </button>
           </nav>
 
           {/* User Section */}
