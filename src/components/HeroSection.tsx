@@ -2,8 +2,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Gift } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-[80vh] bg-gradient-to-br from-teal-900 via-teal-800 to-emerald-800 overflow-hidden">
       {/* Animated Background Elements */}
@@ -39,6 +41,7 @@ const HeroSection = () => {
             </Button>
             
             <Button 
+              onClick={() => navigate('/auth')}
               size="lg" 
               variant="outline" 
               className="border-2 border-white text-white hover:bg-white hover:text-teal-800 px-8 py-4 text-lg font-semibold rounded-full shadow-2xl transform hover:scale-110 transition-all duration-300 backdrop-blur-sm"

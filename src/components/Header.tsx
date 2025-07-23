@@ -60,7 +60,10 @@ const Header = () => {
             </div>
             
             {/* Profile Button */}
-            <Button className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+            <Button 
+              onClick={() => navigate('/auth')}
+              className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300"
+            >
               <User className="w-4 h-4 mr-2" />
               Профіль
             </Button>
