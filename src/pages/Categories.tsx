@@ -26,13 +26,13 @@ const Categories = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Page Header */}
+        {/* Page Header 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-teal-800 mb-4">Категорії призів</h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
             Оберіть категорію, яка вас цікавить, та візьміть участь у розіграшах дивовижних призів
           </p>
-        </div>
+        </div>*/}
 
         {/* Categories Grid */}
         <CategoriesCarousel />
