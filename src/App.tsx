@@ -9,6 +9,7 @@ import Winners from "./pages/Winners";
 import MyTickets from "./pages/MyTickets";
 import Categories from "./pages/Categories";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import RealEstate from "./pages/categories/RealEstate";
 import Transport from "./pages/categories/Transport";
 import Electronics from "./pages/categories/Electronics";
@@ -33,6 +34,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/winners" element={<Winners />} />
           <Route path="/my-tickets" element={<MyTickets />} />
