@@ -1,11 +1,40 @@
 
-import React from 'react';
-import { Wallet, User, Home, Ticket, Trophy } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Wallet, User, Home, Ticket, Trophy, LogOut, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 const Header = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAuthAction = async () => {
+    if (user) {
+      // User is logged in, so log them out
+      await supabase.auth.signOut();
+    } else {
+      // User is not logged in, navigate to auth page
+      navigate('/auth');
+    }
+  };
 
   return (
     <header className="bg-gradient-to-r from-teal-800 via-teal-700 to-teal-600 shadow-2xl sticky top-0 z-50 backdrop-blur-sm">
@@ -66,6 +95,24 @@ const Header = () => {
             >
               <User className="w-4 h-4 mr-2" />
               Профіль
+            </Button>
+            
+            {/* Login/Logout Button */}
+            <Button 
+              onClick={handleAuthAction}
+              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300"
+            >
+              {user ? (
+                <>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Вихід
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Вхід
+                </>
+              )}
             </Button>
           </div>
         </div>
