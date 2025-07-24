@@ -151,7 +151,7 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-teal-900 via-teal-800 to-teal-700 flex items-center justify-center p-4">
       {/* Back Button */}
       <Button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/')}
         variant="ghost"
         className="absolute top-4 left-4 text-white hover:bg-white/20 backdrop-blur-sm"
       >
