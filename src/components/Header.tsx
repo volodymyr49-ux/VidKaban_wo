@@ -71,13 +71,15 @@ const Header = () => {
             >
               Наші переможці
             </button>
-            <button 
-              onClick={() => navigate('/my-tickets')}
-              className="text-white hover:text-yellow-400 transition-all duration-300 font-medium flex items-center space-x-2 hover:scale-105"
-            >
-              <Ticket className="w-4 h-4" />
-              <span>Мої квитки</span>
-            </button>
+            {user && (
+              <button 
+                onClick={() => navigate('/my-tickets')}
+                className="text-white hover:text-yellow-400 transition-all duration-300 font-medium flex items-center space-x-2 hover:scale-105"
+              >
+                <Ticket className="w-4 h-4" />
+                <span>Мої квитки</span>
+              </button>
+            )}
           </nav>
 
           {/* User Section */}
