@@ -10,11 +10,120 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
-      [_ in never]: never
+      lotteries: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          end_time: string
+          id: string
+          image: string | null
+          sold_tickets: number
+          ticket_price: number
+          title: string
+          total_tickets: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          end_time: string
+          id?: string
+          image?: string | null
+          sold_tickets?: number
+          ticket_price: number
+          title: string
+          total_tickets?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          image?: string | null
+          sold_tickets?: number
+          ticket_price?: number
+          title?: string
+          total_tickets?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          balance: number
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          balance?: number
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          balance?: number
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tickets: {
+        Row: {
+          created_at: string
+          id: string
+          lottery_id: string
+          price_paid: number
+          purchase_date: string
+          ticket_number: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lottery_id: string
+          price_paid: number
+          purchase_date?: string
+          ticket_number: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lottery_id?: string
+          price_paid?: number
+          purchase_date?: string
+          ticket_number?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_lottery_id_fkey"
+            columns: ["lottery_id"]
+            isOneToOne: false
+            referencedRelation: "lotteries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
