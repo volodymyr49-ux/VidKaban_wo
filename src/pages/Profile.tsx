@@ -13,24 +13,83 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
+interface UserProfile {
+  balance: number;
+  display_name: string | null;
+}
+
+interface UserTicket {
+  id: string;
+  ticket_number: string;
+  price_paid: number;
+  lottery: {
+    title: string;
+    category: string;
+  };
+}
+
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [tickets, setTickets] = useState<UserTicket[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const fetchUserData = async () => {
+      // Check authentication
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/auth');
         return;
       }
+      
       setUser(session.user);
       setDisplayName(session.user.user_metadata?.display_name || '');
+      
+      // Fetch user profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('balance, display_name')
+        .eq('user_id', session.user.id)
+        .single();
+      
+      if (profileData) {
+        setProfile(profileData);
+        setDisplayName(profileData.display_name || session.user.email || '');
+      }
+      
+      // Fetch user tickets
+      const { data: ticketsData } = await supabase
+        .from('tickets')
+        .select(`
+          id,
+          ticket_number,
+          price_paid,
+          lotteries:lottery_id (
+            title,
+            category
+          )
+        `)
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+      
+      if (ticketsData) {
+        setTickets(ticketsData.map(ticket => ({
+          ...ticket,
+          lottery: {
+            title: ticket.lotteries?.title || 'Невідома лотерея',
+            category: ticket.lotteries?.category || 'Невідома категорія'
+          }
+        })));
+      }
+      
       setLoading(false);
-    });
+    };
+
+    fetchUserData();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -40,7 +99,6 @@ const Profile = () => {
           return;
         }
         setUser(session.user);
-        setDisplayName(session.user.user_metadata?.display_name || '');
       }
     );
 
@@ -169,15 +227,15 @@ const Profile = () => {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="bg-slate-700/50 rounded-lg p-4">
-                    <div className="text-2xl font-bold text-yellow-400">2,500</div>
+                    <div className="text-2xl font-bold text-yellow-400">{profile?.balance?.toFixed(2) || '0.00'}</div>
                     <div className="text-sm text-slate-300">Баланс ₴</div>
                   </div>
                   <div className="bg-slate-700/50 rounded-lg p-4">
-                    <div className="text-2xl font-bold text-green-400">12</div>
+                    <div className="text-2xl font-bold text-green-400">{tickets.length}</div>
                     <div className="text-sm text-slate-300">Квитків</div>
                   </div>
                   <div className="bg-slate-700/50 rounded-lg p-4">
-                    <div className="text-2xl font-bold text-purple-400">3</div>
+                    <div className="text-2xl font-bold text-purple-400">0</div>
                     <div className="text-sm text-slate-300">Виграші</div>
                   </div>
                 </div>
@@ -268,9 +326,26 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-slate-400">
-                    Квитків поки немає. Придбайте перший квиток!
-                  </div>
+                  {tickets.length > 0 ? (
+                    <div className="space-y-4">
+                      {tickets.map((ticket) => (
+                        <div key={ticket.id} className="p-4 bg-slate-700/50 rounded-lg">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="text-white font-semibold">{ticket.lottery.title}</h4>
+                              <p className="text-slate-400 text-sm">Категорія: {ticket.lottery.category}</p>
+                            </div>
+                            <span className="text-green-400 font-bold">{ticket.price_paid} ₴</span>
+                          </div>
+                          <p className="text-slate-300 text-sm">Номер квитка: {ticket.ticket_number}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-slate-400">
+                      Квитків поки немає. Придбайте перший квиток!
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -287,7 +362,7 @@ const Profile = () => {
                 <CardContent className="space-y-6">
                   <div className="bg-gradient-to-r from-green-600 to-teal-600 rounded-lg p-6 text-white">
                     <div className="text-lg mb-2">Поточний баланс</div>
-                    <div className="text-4xl font-bold">2,500 ₴</div>
+                    <div className="text-4xl font-bold">{profile?.balance?.toFixed(2) || '0.00'} ₴</div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

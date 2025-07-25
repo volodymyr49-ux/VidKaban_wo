@@ -1,8 +1,22 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Users, Ticket } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useTicketPurchase } from '@/hooks/useTicketPurchase';
+
+interface Lottery {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  ticket_price: number;
+  total_tickets: number;
+  sold_tickets: number;
+  end_time: string;
+  category: string;
+}
 
 const lotteries = [
   {
@@ -74,6 +88,33 @@ const lotteries = [
 ];
 
 const ActiveLotteries = () => {
+  const [realLotteries, setRealLotteries] = useState<Lottery[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { purchaseTicket, loading: purchasing } = useTicketPurchase();
+
+  useEffect(() => {
+    const fetchLotteries = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('lotteries')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching lotteries:', error);
+        } else {
+          setRealLotteries(data || []);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLotteries();
+  }, []);
+
   const calculateTimeLeft = (endTime: string) => {
     const difference = +new Date(endTime) - +new Date();
     if (difference > 0) {
@@ -84,6 +125,28 @@ const ActiveLotteries = () => {
     }
     return 'Завершено';
   };
+
+  const handlePurchaseTicket = async (lottery: Lottery) => {
+    await purchaseTicket({
+      lotteryId: lottery.id,
+      ticketPrice: lottery.ticket_price
+    });
+  };
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-gradient-to-br from-white to-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-teal-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Завантаження лотерей...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const displayLotteries = realLotteries.length > 0 ? realLotteries : lotteries;
 
   return (
     <section className="py-16 bg-gradient-to-br from-white to-gray-50">
@@ -96,7 +159,7 @@ const ActiveLotteries = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {lotteries.map((lottery, index) => (
+          {displayLotteries.map((lottery, index) => (
             <Card
               key={lottery.id}
               className="group overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-0 bg-white animate-fade-in"
@@ -104,7 +167,7 @@ const ActiveLotteries = () => {
             >
               <div className="relative overflow-hidden">
                 <img
-                  src={lottery.image}
+                  src={lottery.image || '/placeholder.svg'}
                   alt={lottery.title}
                   className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
@@ -115,7 +178,7 @@ const ActiveLotteries = () => {
                 </div>
                 <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
-                  {calculateTimeLeft(lottery.endTime)}
+                  {calculateTimeLeft(lottery.end_time || lottery.endTime)}
                 </div>
               </div>
 
@@ -130,14 +193,14 @@ const ActiveLotteries = () => {
                   <div className="flex justify-between text-sm text-gray-600 mb-2">
                     <span className="flex items-center">
                       <Users className="w-4 h-4 mr-1" />
-                      {lottery.soldTickets} з {lottery.totalTickets}
+                      {lottery.sold_tickets || lottery.soldTickets} з {lottery.total_tickets || lottery.totalTickets}
                     </span>
-                    <span>{Math.round((lottery.soldTickets / lottery.totalTickets) * 100)}%</span>
+                    <span>{Math.round(((lottery.sold_tickets || lottery.soldTickets) / (lottery.total_tickets || lottery.totalTickets)) * 100)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-gradient-to-r from-teal-500 to-teal-600 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${(lottery.soldTickets / lottery.totalTickets) * 100}%` }}
+                      style={{ width: `${((lottery.sold_tickets || lottery.soldTickets) / (lottery.total_tickets || lottery.totalTickets)) * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -145,12 +208,16 @@ const ActiveLotteries = () => {
                 {/* Price and Button */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-2xl font-bold text-teal-600">{lottery.ticketPrice} ₴</span>
+                    <span className="text-2xl font-bold text-teal-600">{lottery.ticket_price || lottery.ticketPrice} ₴</span>
                     <span className="text-sm text-gray-500 ml-1">/ квиток</span>
                   </div>
-                  <Button className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                  <Button 
+                    onClick={() => handlePurchaseTicket(lottery)}
+                    disabled={purchasing}
+                    className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <Ticket className="w-4 h-4 mr-2" />
-                    Купити квиток
+                    {purchasing ? 'Обробка...' : 'Купити квиток'}
                   </Button>
                 </div>
               </CardContent>

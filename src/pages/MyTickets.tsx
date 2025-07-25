@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Ticket, Clock, Trophy, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+
+interface UserTicket {
+  id: string;
+  ticket_number: string;
+  price_paid: number;
+  purchase_date: string;
+  lottery: {
+    id: string;
+    title: string;
+    category: string;
+    end_time: string;
+    image: string;
+  };
+}
 
 const myTickets = [
   {
@@ -63,30 +78,92 @@ const myTickets = [
 
 const MyTickets = () => {
   const navigate = useNavigate();
+  const [tickets, setTickets] = useState<UserTicket[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const getStatusBadge = (status: string, result?: string) => {
-    if (status === 'active') {
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate('/auth');
+          return;
+        }
+
+        const { data: ticketsData, error } = await supabase
+          .from('tickets')
+          .select(`
+            id,
+            ticket_number,
+            price_paid,
+            created_at,
+            lotteries:lottery_id (
+              id,
+              title,
+              category,
+              end_time,
+              image
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching tickets:', error);
+        } else {
+          const formattedTickets = ticketsData?.map(ticket => ({
+            ...ticket,
+            purchase_date: new Date(ticket.created_at).toLocaleDateString('uk-UA'),
+            lottery: {
+              id: ticket.lotteries?.id || '',
+              title: ticket.lotteries?.title || 'Невідома лотерея',
+              category: ticket.lotteries?.category || 'Невідома категорія',
+              end_time: ticket.lotteries?.end_time || '',
+              image: ticket.lotteries?.image || '/placeholder.svg'
+            }
+          })) || [];
+          setTickets(formattedTickets);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, [navigate]);
+
+  const getStatusBadge = (ticket: UserTicket) => {
+    const now = new Date();
+    const endTime = new Date(ticket.lottery.end_time);
+    
+    if (endTime > now) {
       return (
         <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold flex items-center">
           <Clock className="w-4 h-4 mr-1" />
           Активний
         </span>
       );
-    } else if (status === 'completed' && result === 'Не виграв') {
+    } else {
       return (
         <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
           Завершено
         </span>
       );
-    } else if (status === 'won') {
-      return (
-        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold flex items-center">
-          <Trophy className="w-4 h-4 mr-1" />
-          Виграв!
-        </span>
-      );
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <Header />
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -121,26 +198,24 @@ const MyTickets = () => {
         {/* Statistics */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-            <h3 className="text-2xl font-bold text-teal-800 mb-2">{myTickets.length}</h3>
+            <h3 className="text-2xl font-bold text-teal-800 mb-2">{tickets.length}</h3>
             <p className="text-slate-600">Всього квитків</p>
           </div>
           <div className="bg-white rounded-xl p-6 shadow-lg text-center">
             <h3 className="text-2xl font-bold text-green-600 mb-2">
-              {myTickets.filter(t => t.status === 'active').length}
+              {tickets.filter(t => new Date(t.lottery.end_time) > new Date()).length}
             </h3>
             <p className="text-slate-600">Активних</p>
           </div>
           <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-            <h3 className="text-2xl font-bold text-yellow-600 mb-2">
-              {myTickets.filter(t => t.status === 'won').length}
-            </h3>
+            <h3 className="text-2xl font-bold text-yellow-600 mb-2">0</h3>
             <p className="text-slate-600">Виграних</p>
           </div>
         </div>
 
         {/* Tickets List */}
         <div className="space-y-6">
-          {myTickets.map((ticket, index) => (
+          {tickets.map((ticket, index) => (
             <div
               key={ticket.id}
               className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
@@ -149,8 +224,8 @@ const MyTickets = () => {
               <div className="md:flex">
                 <div className="md:w-1/3">
                   <img
-                    src={ticket.image}
-                    alt={ticket.lottery}
+                    src={ticket.lottery.image}
+                    alt={ticket.lottery.title}
                     className="w-full h-48 md:h-full object-cover"
                   />
                 </div>
@@ -158,50 +233,33 @@ const MyTickets = () => {
                 <div className="md:w-2/3 p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-xl font-bold text-teal-800 mb-2">{ticket.lottery}</h3>
-                      <p className="text-slate-600 mb-2">Категорія: {ticket.category}</p>
-                      <p className="text-lg font-semibold text-teal-600">Квиток: {ticket.ticketNumber}</p>
+                      <h3 className="text-xl font-bold text-teal-800 mb-2">{ticket.lottery.title}</h3>
+                      <p className="text-slate-600 mb-2">Категорія: {ticket.lottery.category}</p>
+                      <p className="text-lg font-semibold text-teal-600">Квиток: {ticket.ticket_number}</p>
                     </div>
-                    {getStatusBadge(ticket.status, ticket.result)}
+                    {getStatusBadge(ticket)}
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-sm text-slate-500">Ціна квитка</p>
-                      <p className="text-lg font-semibold text-slate-800">{ticket.price}</p>
+                      <p className="text-lg font-semibold text-slate-800">{ticket.price_paid} ₴</p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-500">Дата покупки</p>
                       <p className="text-lg font-semibold text-slate-800 flex items-center">
                         <Calendar className="w-4 h-4 mr-2" />
-                        {ticket.purchaseDate}
+                        {ticket.purchase_date}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-500">Дата розіграшу</p>
-                      <p className="text-lg font-semibold text-slate-800">{ticket.drawDate}</p>
+                      <p className="text-lg font-semibold text-slate-800">
+                        {new Date(ticket.lottery.end_time).toLocaleDateString('uk-UA')}
+                      </p>
                     </div>
-                    {ticket.status === 'active' && (
-                      <div>
-                        <p className="text-sm text-slate-500">Продано квитків</p>
-                        <p className="text-lg font-semibold text-slate-800">
-                          {ticket.soldTickets} / {ticket.totalTickets}
-                        </p>
-                        <div className="w-full bg-slate-200 rounded-full h-2 mt-1">
-                          <div
-                            className="bg-teal-600 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(ticket.soldTickets / ticket.totalTickets) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
                   </div>
 
-                  {ticket.result && (
-                    <div className="mt-4 p-3 bg-red-50 rounded-lg">
-                      <p className="text-red-800 font-semibold">Результат: {ticket.result}</p>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -209,7 +267,7 @@ const MyTickets = () => {
         </div>
 
         {/* Empty State */}
-        {myTickets.length === 0 && (
+        {tickets.length === 0 && (
           <div className="text-center py-16">
             <Ticket className="w-16 h-16 text-slate-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-slate-600 mb-2">У вас ще немає квитків</h3>
