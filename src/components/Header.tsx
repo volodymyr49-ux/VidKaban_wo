@@ -37,7 +37,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-fuchsia-800 via-fuchsia-200 to-fuchsia-600 shadow-2xl sticky top-0 z-50 backdrop-blur-sm">
+    <header className="bg-gradient-to-r from-fuchsia-800 via-fuchsia-600 to-fuchsia-700 shadow-2xl sticky top-0 z-50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
