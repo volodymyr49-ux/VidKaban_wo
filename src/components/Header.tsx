@@ -37,12 +37,12 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-fuchsia-800 via-fuchsia-600 to-fuchsia-700 shadow-2xl sticky top-0 z-50 backdrop-blur-sm">
+    <header className="bg-gradient-to-r from-slate-800 via-slate-900 to-slate-700 shadow-2xl sticky top-0 z-50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-fuchsia-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-300">
+            <div className="w-12 h-12 bg-gradient-to-br from-fuchsia-900 to-slate-900 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-300">
               <Trophy className="w-7 h-7 text-white" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-amber-300 bg-clip-text text-transparent">
