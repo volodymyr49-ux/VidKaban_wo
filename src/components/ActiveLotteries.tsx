@@ -167,9 +167,12 @@ const ActiveLotteries = () => {
             >
               <div className="relative overflow-hidden">
                 <img
-                  src={lottery.image || '/placeholder.svg'}
+                  src={lottery.image || `https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop&auto=format&q=80`}
                   alt={lottery.title}
                   className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop&auto=format&q=80';
+                  }}
                 />
                 <div className="absolute top-4 left-4">
                   <span className="bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
