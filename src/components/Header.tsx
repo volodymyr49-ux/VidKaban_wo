@@ -9,17 +9,50 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 const Header = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [balance, setBalance] = useState<number>(0);
+
+  // Function to fetch user balance
+  const fetchUserBalance = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('balance')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching balance:', error);
+        return;
+      }
+      
+      if (data) {
+        setBalance(data.balance);
+      }
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+    }
+  };
 
   useEffect(() => {
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserBalance(session.user.id);
+      } else {
+        setBalance(0);
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchUserBalance(session.user.id);
+        } else {
+          setBalance(0);
+        }
       }
     );
 
@@ -87,7 +120,9 @@ const Header = () => {
             {/* Wallet Balance */}
             <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 flex items-center space-x-2 hover:bg-white/30 transition-all duration-300">
               <Wallet className="w-5 h-5 text-yellow-400" />
-              <span className="text-white font-semibold">2,500 ₴</span>
+              <span className="text-white font-semibold">
+                {user ? `${balance.toLocaleString()} ₴` : '0 ₴'}
+              </span>
             </div>
             
             {/* Profile Button */}
