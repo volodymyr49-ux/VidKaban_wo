@@ -5,71 +5,51 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Timer, Users, Ticket } from 'lucide-react';
-
-const jewelryItems = [
-  {
-    id: 1,
-    title: 'Діамантова каблучка',
-    description: 'Золота каблучка з діамантом 1 карат',
-    image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=300&fit=crop',
-    ticketPrice: 200,
-    progress: 67,
-    timeLeft: '3д 12г',
-    participants: 234
-  },
-  {
-    id: 2,
-    title: 'Перлинне намисто',
-    description: 'Намисто з натуральних перлин Akoya',
-    image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=300&fit=crop',
-    ticketPrice: 150,
-    progress: 82,
-    timeLeft: '1д 18г',
-    participants: 345
-  },
-  {
-    id: 3,
-    title: 'Золоті сережки',
-    description: 'Елегантні сережки з смарагдами',
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=300&fit=crop',
-    ticketPrice: 120,
-    progress: 45,
-    timeLeft: '4д 20г',
-    participants: 189
-  },
-  {
-    id: 4,
-    title: 'Чоловічий годинник Rolex',
-    description: 'Submariner з автоматичним механізмом',
-    image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=300&fit=crop',
-    ticketPrice: 500,
-    progress: 91,
-    timeLeft: '14г 25хв',
-    participants: 567
-  },
-  {
-    id: 5,
-    title: 'Браслет з сапфірами',
-    description: 'Платиновий браслет з синіми сапфірами',
-    image: 'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=400&h=300&fit=crop',
-    ticketPrice: 300,
-    progress: 38,
-    timeLeft: '5д 9г',
-    participants: 123
-  },
-  {
-    id: 6,
-    title: 'Жіночий годинник Cartier',
-    description: 'Класичний годинник з діамантовим безелем',
-    image: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=400&h=300&fit=crop',
-    ticketPrice: 400,
-    progress: 73,
-    timeLeft: '2д 15г',
-    participants: 298
-  }
-];
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useTicketPurchase } from '@/hooks/useTicketPurchase';
 
 const Jewelry = () => {
+  const { purchaseTicket, loading } = useTicketPurchase();
+  
+  const { data: lotteries, isLoading } = useQuery({
+    queryKey: ['lotteries', 'jewelry'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lotteries')
+        .select('*')
+        .eq('category', 'jewelry')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const handlePurchaseTicket = async (lottery: any) => {
+    await purchaseTicket({
+      lotteryId: lottery.id,
+      ticketPrice: lottery.ticket_price
+    });
+  };
+
+  const calculateProgress = (soldTickets: number, totalTickets: number) => {
+    return Math.round((soldTickets / totalTickets) * 100);
+  };
+
+  const formatTimeLeft = (endTime: string) => {
+    const now = new Date();
+    const end = new Date(endTime);
+    const diff = end.getTime() - now.getTime();
+    
+    if (diff <= 0) return 'Завершено';
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) return `${days}д ${hours}г`;
+    return `${hours}г`;
+  };
   return (
     <div className="min-h-screen">
       <Header />
@@ -84,56 +64,64 @@ const Jewelry = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {jewelryItems.map((item) => (
-              <Card key={item.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                <CardHeader className="p-0">
-                  <div className="relative overflow-hidden">
-                    <img 
-                      src={item.image} 
-                      alt={item.title}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
-                      <Timer className="w-4 h-4 text-orange-500" />
-                      <span className="text-sm font-medium">{item.timeLeft}</span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{item.title}</h3>
-                  <p className="text-gray-600 mb-4">{item.description}</p>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">Прогрес продажів</span>
-                      <span className="text-sm font-medium">{item.progress}%</span>
-                    </div>
-                    <Progress value={item.progress} className="h-2" />
-                    
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        <span>{item.participants} учасників</span>
+          {isLoading ? (
+            <div className="text-center">Завантаження...</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {lotteries?.map((lottery) => (
+                <Card key={lottery.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                  <CardHeader className="p-0">
+                    <div className="relative overflow-hidden">
+                      <img 
+                        src={lottery.image} 
+                        alt={lottery.title}
+                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
+                        <Timer className="w-4 h-4 text-orange-500" />
+                        <span className="text-sm font-medium">{formatTimeLeft(lottery.end_time)}</span>
                       </div>
                     </div>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">{lottery.title}</h3>
+                    <p className="text-gray-600 mb-4">{lottery.description}</p>
                     
-                    {/* Price and Button */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-2xl font-bold text-pink-600">{item.ticketPrice} ₴</span>
-                        <span className="text-sm text-gray-500 ml-1">/ квиток</span>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Прогрес продажів</span>
+                        <span className="text-sm font-medium">{calculateProgress(lottery.sold_tickets, lottery.total_tickets)}%</span>
                       </div>
-                      <Button className="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
-                        <Ticket className="w-4 h-4 mr-2" />
-                        Купити квиток
-                      </Button>
+                      <Progress value={calculateProgress(lottery.sold_tickets, lottery.total_tickets)} className="h-2" />
+                      
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                        <div className="flex items-center gap-1">
+                          <Users className="w-4 h-4" />
+                          <span>{lottery.sold_tickets} учасників</span>
+                        </div>
+                      </div>
+                      
+                      {/* Price and Button */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-2xl font-bold text-yellow-600">{lottery.ticket_price} ₴</span>
+                          <span className="text-sm text-gray-500 ml-1">/ квиток</span>
+                        </div>
+                        <Button 
+                          onClick={() => handlePurchaseTicket(lottery)}
+                          disabled={loading}
+                          className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300"
+                        >
+                          <Ticket className="w-4 h-4 mr-2" />
+                          {loading ? 'Обробка...' : 'Купити квиток'}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <Footer />

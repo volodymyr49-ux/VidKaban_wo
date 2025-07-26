@@ -5,71 +5,51 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Timer, Users, Ticket } from 'lucide-react';
-
-const cosmeticsItems = [
-  {
-    id: 1,
-    title: 'Набір Chanel',
-    description: 'Повний набір косметики Chanel Coco Mademoiselle',
-    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop',
-    ticketPrice: 80,
-    progress: 85,
-    timeLeft: '1д 9г',
-    participants: 789
-  },
-  {
-    id: 2,
-    title: 'Парфум Dior',
-    description: 'Miss Dior Eau de Parfum 100ml',
-    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=300&fit=crop',
-    ticketPrice: 60,
-    progress: 72,
-    timeLeft: '2д 16г',
-    participants: 567
-  },
-  {
-    id: 3,
-    title: 'Набір догляду Estée Lauder',
-    description: 'Advanced Night Repair комплекс',
-    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=300&fit=crop',
-    ticketPrice: 70,
-    progress: 58,
-    timeLeft: '3д 11г',
-    participants: 445
-  },
-  {
-    id: 4,
-    title: 'Сироватка Lancôme',
-    description: 'Advanced Génifique Youth Activating',
-    image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=300&fit=crop',
-    ticketPrice: 50,
-    progress: 93,
-    timeLeft: '8г 45хв',
-    participants: 678
-  },
-  {
-    id: 5,
-    title: 'Палетка MAC',
-    description: 'Professional Eye Shadow Palette',
-    image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&h=300&fit=crop',
-    ticketPrice: 40,
-    progress: 41,
-    timeLeft: '4д 19г',
-    participants: 234
-  },
-  {
-    id: 6,
-    title: 'Крем La Mer',
-    description: 'Зволожуючий крем The Moisturizing Cream',
-    image: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&h=300&fit=crop',
-    ticketPrice: 90,
-    progress: 67,
-    timeLeft: '2д 22г',
-    participants: 356
-  }
-];
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useTicketPurchase } from '@/hooks/useTicketPurchase';
 
 const Cosmetics = () => {
+  const { purchaseTicket, loading } = useTicketPurchase();
+  
+  const { data: lotteries, isLoading } = useQuery({
+    queryKey: ['lotteries', 'cosmetics'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lotteries')
+        .select('*')
+        .eq('category', 'cosmetics')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const handlePurchaseTicket = async (lottery: any) => {
+    await purchaseTicket({
+      lotteryId: lottery.id,
+      ticketPrice: lottery.ticket_price
+    });
+  };
+
+  const calculateProgress = (soldTickets: number, totalTickets: number) => {
+    return Math.round((soldTickets / totalTickets) * 100);
+  };
+
+  const formatTimeLeft = (endTime: string) => {
+    const now = new Date();
+    const end = new Date(endTime);
+    const diff = end.getTime() - now.getTime();
+    
+    if (diff <= 0) return 'Завершено';
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) return `${days}д ${hours}г`;
+    return `${hours}г`;
+  };
   return (
     <div className="min-h-screen">
       <Header />
@@ -84,56 +64,64 @@ const Cosmetics = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {cosmeticsItems.map((item) => (
-              <Card key={item.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                <CardHeader className="p-0">
-                  <div className="relative overflow-hidden">
-                    <img 
-                      src={item.image} 
-                      alt={item.title}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
-                      <Timer className="w-4 h-4 text-orange-500" />
-                      <span className="text-sm font-medium">{item.timeLeft}</span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{item.title}</h3>
-                  <p className="text-gray-600 mb-4">{item.description}</p>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">Прогрес продажів</span>
-                      <span className="text-sm font-medium">{item.progress}%</span>
-                    </div>
-                    <Progress value={item.progress} className="h-2" />
-                    
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        <span>{item.participants} учасників</span>
+          {isLoading ? (
+            <div className="text-center">Завантаження...</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {lotteries?.map((lottery) => (
+                <Card key={lottery.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                  <CardHeader className="p-0">
+                    <div className="relative overflow-hidden">
+                      <img 
+                        src={lottery.image} 
+                        alt={lottery.title}
+                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
+                        <Timer className="w-4 h-4 text-orange-500" />
+                        <span className="text-sm font-medium">{formatTimeLeft(lottery.end_time)}</span>
                       </div>
                     </div>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">{lottery.title}</h3>
+                    <p className="text-gray-600 mb-4">{lottery.description}</p>
                     
-                    {/* Price and Button */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-2xl font-bold text-orange-600">{item.ticketPrice} ₴</span>
-                        <span className="text-sm text-gray-500 ml-1">/ квиток</span>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Прогрес продажів</span>
+                        <span className="text-sm font-medium">{calculateProgress(lottery.sold_tickets, lottery.total_tickets)}%</span>
                       </div>
-                      <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
-                        <Ticket className="w-4 h-4 mr-2" />
-                        Купити квиток
-                      </Button>
+                      <Progress value={calculateProgress(lottery.sold_tickets, lottery.total_tickets)} className="h-2" />
+                      
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                        <div className="flex items-center gap-1">
+                          <Users className="w-4 h-4" />
+                          <span>{lottery.sold_tickets} учасників</span>
+                        </div>
+                      </div>
+                      
+                      {/* Price and Button */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-2xl font-bold text-pink-600">{lottery.ticket_price} ₴</span>
+                          <span className="text-sm text-gray-500 ml-1">/ квиток</span>
+                        </div>
+                        <Button 
+                          onClick={() => handlePurchaseTicket(lottery)}
+                          disabled={loading}
+                          className="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300"
+                        >
+                          <Ticket className="w-4 h-4 mr-2" />
+                          {loading ? 'Обробка...' : 'Купити квиток'}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <Footer />
