@@ -18,74 +18,6 @@ interface Lottery {
   category: string;
 }
 
-const lotteries = [
-  {
-    id: 1,
-    title: 'Tesla Model 3',
-    description: 'Електричний автомобіль преміум класу',
-    image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=300&fit=crop',
-    ticketPrice: 250,
-    totalTickets: 1000,
-    soldTickets: 750,
-    endTime: '2024-01-15T18:00:00',
-    category: 'Транспорт'
-  },
-  {
-    id: 2,
-    title: 'iPhone 15 Pro Max',
-    description: 'Найновіший смартфон від Apple',
-    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=300&fit=crop',
-    ticketPrice: 150,
-    totalTickets: 500,
-    soldTickets: 320,
-    endTime: '2024-01-12T20:00:00',
-    category: 'Електроніка'
-  },
-  {
-    id: 3,
-    title: 'Квартира у центрі Києва',
-    description: '2-кімнатна квартира, 65 м²',
-    image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop',
-    ticketPrice: 500,
-    totalTickets: 2000,
-    soldTickets: 1200,
-    endTime: '2024-01-20T12:00:00',
-    category: 'Нерухомість'
-  },
-  {
-    id: 4,
-    title: 'MacBook Pro M3',
-    description: 'Потужний ноутбук для професіоналів',
-    image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop',
-    ticketPrice: 200,
-    totalTickets: 750,
-    soldTickets: 450,
-    endTime: '2024-01-18T16:00:00',
-    category: 'Електроніка'
-  },
-  {
-    id: 5,
-    title: 'Золоті сережки з діамантами',
-    description: 'Ексклюзивні ювелірні вироби',
-    image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=300&fit=crop',
-    ticketPrice: 100,
-    totalTickets: 300,
-    soldTickets: 180,
-    endTime: '2024-01-14T14:00:00',
-    category: 'Ювелірні вироби'
-  },
-  {
-    id: 6,
-    title: 'Відпочинок на Мальдівах',
-    description: '7 днів у 5-зірковому готелі',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
-    ticketPrice: 300,
-    totalTickets: 400,
-    soldTickets: 280,
-    endTime: '2024-01-16T10:00:00',
-    category: 'Туризм'
-  }
-];
 
 const ActiveLotteries = () => {
   const [realLotteries, setRealLotteries] = useState<Lottery[]>([]);
@@ -146,7 +78,7 @@ const ActiveLotteries = () => {
     );
   }
 
-  const displayLotteries = realLotteries.length > 0 ? realLotteries : lotteries;
+  const displayLotteries = realLotteries;
 
   return (
     <section className="py-16 bg-gradient-to-br from-white to-gray-50">
@@ -181,7 +113,7 @@ const ActiveLotteries = () => {
                 </div>
                 <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
-                  {calculateTimeLeft(lottery.end_time || lottery.endTime)}
+                  {calculateTimeLeft(lottery.end_time)}
                 </div>
               </div>
 
@@ -196,14 +128,14 @@ const ActiveLotteries = () => {
                   <div className="flex justify-between text-sm text-gray-600 mb-2">
                     <span className="flex items-center">
                       <Users className="w-4 h-4 mr-1" />
-                      {lottery.sold_tickets || lottery.soldTickets} з {lottery.total_tickets || lottery.totalTickets}
+                      {lottery.sold_tickets} з {lottery.total_tickets}
                     </span>
-                    <span>{Math.round(((lottery.sold_tickets || lottery.soldTickets) / (lottery.total_tickets || lottery.totalTickets)) * 100)}%</span>
+                    <span>{Math.round((lottery.sold_tickets / lottery.total_tickets) * 100)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-gradient-to-r from-teal-500 to-teal-600 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${((lottery.sold_tickets || lottery.soldTickets) / (lottery.total_tickets || lottery.totalTickets)) * 100}%` }}
+                      style={{ width: `${(lottery.sold_tickets / lottery.total_tickets) * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -211,7 +143,7 @@ const ActiveLotteries = () => {
                 {/* Price and Button */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-2xl font-bold text-teal-600">{lottery.ticket_price || lottery.ticketPrice} ₴</span>
+                    <span className="text-2xl font-bold text-teal-600">{lottery.ticket_price} ₴</span>
                     <span className="text-sm text-gray-500 ml-1">/ квиток</span>
                   </div>
                   <Button 
