@@ -111,23 +111,26 @@ const Tools = () => {
                     </div>
                     <Progress value={item.progress} className="h-2" />
                     
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                       <div className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
                         <span>{item.participants} учасників</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Ticket className="w-4 h-4" />
-                        <span>{item.ticketPrice} ₴</span>
+                    </div>
+                    
+                    {/* Price and Button */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-2xl font-bold text-gray-600">{item.ticketPrice} ₴</span>
+                        <span className="text-sm text-gray-500 ml-1">/ квиток</span>
                       </div>
+                      <Button className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-2 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                        <Ticket className="w-4 h-4 mr-2" />
+                        Купити квиток
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="p-6 pt-0">
-                  <Button className="w-full bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-3 rounded-xl transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
-                    Купити квиток за {item.ticketPrice} ₴
-                  </Button>
-                </CardFooter>
               </Card>
             ))}
           </div>
