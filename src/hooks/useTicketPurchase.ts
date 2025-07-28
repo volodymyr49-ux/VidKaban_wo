@@ -100,10 +100,15 @@ export const useTicketPurchase = () => {
         .single();
 
       if (currentLottery) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('lotteries')
           .update({ sold_tickets: currentLottery.sold_tickets + 1 })
           .eq('id', lotteryId);
+
+        if (updateError) {
+          console.error('Error updating lottery sold tickets:', updateError);
+          // Don't fail the entire transaction for this
+        }
       }
 
       // Show success message
@@ -112,8 +117,8 @@ export const useTicketPurchase = () => {
         description: `Ваш номер квитка: ${ticketNumber}`,
       });
 
-      // Navigate to my tickets page
-      navigate('/my-tickets');
+      // Refresh the page to show updated counter or navigate to my tickets
+      window.location.reload();
       return true;
 
     } catch (error) {

@@ -59,10 +59,16 @@ const ActiveLotteries = () => {
   };
 
   const handlePurchaseTicket = async (lottery: Lottery) => {
-    await purchaseTicket({
+    const success = await purchaseTicket({
       lotteryId: lottery.id,
       ticketPrice: lottery.ticket_price
     });
+    
+    // If purchase was successful, refetch lotteries to update the UI
+    if (success) {
+      // Trigger a re-fetch of lotteries
+      window.location.reload();
+    }
   };
 
   if (loading) {
