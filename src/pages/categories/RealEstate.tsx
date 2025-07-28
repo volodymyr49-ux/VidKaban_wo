@@ -18,7 +18,7 @@ const RealEstate = () => {
       const { data, error } = await supabase
         .from('lotteries')
         .select('*')
-        .eq('category', 'real-estate')
+        .eq('category', 'Нерухомість')
         .order('created_at', { ascending: false });
       
       if (error) throw error;

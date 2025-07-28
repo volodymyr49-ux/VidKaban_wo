@@ -18,7 +18,7 @@ const Sports = () => {
       const { data, error } = await supabase
         .from('lotteries')
         .select('*')
-        .eq('category', 'sports')
+        .eq('category', 'Спорт')
         .order('created_at', { ascending: false });
       
       if (error) throw error;

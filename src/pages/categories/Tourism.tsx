@@ -18,7 +18,7 @@ const Tourism = () => {
       const { data, error } = await supabase
         .from('lotteries')
         .select('*')
-        .eq('category', 'tourism')
+        .eq('category', 'Туризм')
         .order('created_at', { ascending: false });
       
       if (error) throw error;

@@ -18,7 +18,7 @@ const Kids = () => {
       const { data, error } = await supabase
         .from('lotteries')
         .select('*')
-        .eq('category', 'kids')
+        .eq('category', 'Дитячі товари')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
