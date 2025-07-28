@@ -88,11 +88,55 @@ const Auth = () => {
       });
 
       if (error) {
-        toast({
-          title: "Помилка входу",
-          description: error.message,
-          variant: "destructive"
-        });
+        if (error.message === "Email not confirmed") {
+          toast({
+            title: "Email не підтверджено",
+            description: "Будь ласка, перевірте вашу пошту та підтвердіть email адресу.",
+            variant: "destructive",
+            action: (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const { error: resendError } = await supabase.auth.resend({
+                      type: 'signup',
+                      email: formData.email
+                    });
+                    
+                    if (resendError) {
+                      toast({
+                        title: "Помилка",
+                        description: "Не вдалося відправити лист підтвердження",
+                        variant: "destructive"
+                      });
+                    } else {
+                      toast({
+                        title: "Лист відправлено!",
+                        description: "Перевірте вашу пошту для підтвердження email",
+                      });
+                    }
+                  } catch (err) {
+                    toast({
+                      title: "Помилка",
+                      description: "Щось пішло не так",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+                className="bg-white text-black hover:bg-gray-100"
+              >
+                Відправити знову
+              </Button>
+            )
+          });
+        } else {
+          toast({
+            title: "Помилка входу",
+            description: error.message,
+            variant: "destructive"
+          });
+        }
       } else {
         toast({
           title: "Успішний вхід!",
