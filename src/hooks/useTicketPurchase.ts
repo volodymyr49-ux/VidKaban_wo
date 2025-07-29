@@ -93,13 +93,16 @@ export const useTicketPurchase = () => {
       }
 
       // Update lottery sold tickets count
-      const { data: currentLottery } = await supabase
+      const { data: currentLottery, error: fetchError } = await supabase
         .from('lotteries')
         .select('sold_tickets')
         .eq('id', lotteryId)
         .single();
 
-      if (currentLottery) {
+      if (fetchError) {
+        console.error('Error fetching current lottery:', fetchError);
+        // Don't fail the entire transaction for this
+      } else if (currentLottery) {
         const { error: updateError } = await supabase
           .from('lotteries')
           .update({ sold_tickets: currentLottery.sold_tickets + 1 })
@@ -107,7 +110,11 @@ export const useTicketPurchase = () => {
 
         if (updateError) {
           console.error('Error updating lottery sold tickets:', updateError);
-          // Don't fail the entire transaction for this
+          toast({
+            title: "Попередження",
+            description: "Квиток створено, але лічильник не оновлено",
+            variant: "destructive",
+          });
         }
       }
 
@@ -117,8 +124,6 @@ export const useTicketPurchase = () => {
         description: `Ваш номер квитка: ${ticketNumber}`,
       });
 
-      // Refresh the page to show updated counter or navigate to my tickets
-      window.location.reload();
       return true;
 
     } catch (error) {
