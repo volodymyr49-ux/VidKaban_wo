@@ -130,6 +130,12 @@ const Auth = () => {
               </Button>
             )
           });
+        } else if (error.message === "Invalid login credentials") {
+          toast({
+            title: "Помилка входу",
+            description: "Невірний логін або пароль. Будь ласка, перевірте введені дані або спробуйте відновити пароль.",
+            variant: "destructive"
+          });
         } else {
           toast({
             title: "Помилка входу",
